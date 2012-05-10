@@ -165,13 +165,15 @@ class PoweremailMailbox(osv.osv):
         return True/False
         """
         def get_validate_email(email):
-            if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
+            #  ! # $ % & ' * + - / = ? ^ _ ` { | } ~ 
+            if not re.match(r"^[A-Za-z0-9\.!#\$%&'\*\+-/=\?\^_`\{|\}~]+@[A-Za-z0-9\.!#\$%&'\*\+-/=\?\^_`\{|\}~]+\.[a-zA-Z]*$", email):
                 return False
             return True
 
         if not email:
             return False
 
+        email = email.replace(';',',') #replace separator emails ; -> ,
         emails = email.split(',')
         if len(emails)>0:
             for email in emails:

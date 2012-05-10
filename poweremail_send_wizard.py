@@ -221,8 +221,16 @@ class poweremail_send_wizard(osv.osv_memory):
             #Means there are multiple items selected for email.
             mail_ids = self.save_to_mailbox(cr, uid, ids, context)
             if mail_ids:
-                self.pool.get('poweremail.mailbox').write(cr, uid, mail_ids, {'folder':'outbox'}, context)
-                logger.notifyChannel(_("Power Email"), netsvc.LOG_INFO, _("Emails for multiple items saved in outbox."))
+                for mail in self.pool.get('poweremail.mailbox').browse(cr, uid, mail_ids):
+                    check_email = True
+                    check_email = mail.pem_to and self.pool.get('poweremail.mailbox').check_email_valid(mail.pem_to) or False
+                    if check_email:
+                        self.pool.get('poweremail.mailbox').write(cr, uid, [mail.id], {'folder':'outbox'}, context)
+                        logger.notifyChannel(_("Power Email"), netsvc.LOG_INFO, _("Emails for multiple items saved in outbox."))
+                    else:
+                        self.pool.get('poweremail.mailbox').write(cr, uid, [mail.id], {'folder':'drafts'}, context)
+                        logger.notifyChannel(_("Power Email"), netsvc.LOG_INFO, _("Emails for multiple items saved in drafts."))
+
                 self.write(cr, uid, ids, {
                     'generated':len(mail_ids),
                     'state':'done'
